@@ -2,6 +2,17 @@ const colorContainer = document.querySelector(".color-container");
 
 const hexLetters = "0123456789ABCDEF";
 
+const Throttle = (function (func, delay) {
+  let lastTime = 0;
+
+  const now = Date.now();
+
+  if (now - lastTime >= delay) {
+    func(...args);
+    lastTime = now;
+  }
+})();
+
 const getRandomColor = () =>
   `#${[NaN, NaN, NaN, NaN, NaN, NaN]
     .map(() => {
@@ -20,7 +31,6 @@ const Colors = (() => {
 
   const add = () => {
     colors.push(getRandomColor());
-    console.log({ colors });
   };
 
   const next = () => {
@@ -43,6 +53,28 @@ const Colors = (() => {
   return { add, next, previous, current, copy };
 })();
 
+const Swipe = (function () {
+  let startX;
+  let endX;
+
+  document.addEventListener("touchstart", (event) => {
+    startX = event.touches[0].clientX;
+  });
+
+  document.addEventListener("touchmove", (event) => {
+    endX = event.touches[0].clientX;
+  });
+
+  document.addEventListener("touchend", () => {
+    const deltaX = endX - startX;
+    if (deltaX > 0) {
+      scroll({ deltaY: -1 });
+    } else {
+      scroll({ deltaY: 1 });
+    }
+  });
+})();
+
 const scroll = (event) => {
   if (event.deltaY > 0) {
     Colors.add();
@@ -58,7 +90,6 @@ const scroll = (event) => {
 };
 
 const handleKeyDown = (event) => {
-  // handle arrow up and down the same as scroll down and up
   if (event.key === "ArrowUp") {
     scroll({ deltaY: -1 });
   } else if (event.key === "ArrowDown") {
